@@ -16,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddDebugLogProce
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ContainerBuilderDebugDumpPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\DefaultCachePoolsPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\DefaultMessageBusPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\DeprecatedRoutingLoaderPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ErrorLoggerCompilerPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\FindCommandBundlesPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ProfilerPass;
@@ -228,6 +229,7 @@ class FrameworkBundle extends Bundle
         $container->addCompilerPass(new RegisterCompiledExpressionLanguagesPass());
         $container->addCompilerPass(new RemoveEmptyControllerArgumentLocatorsPass(), PassConfig::TYPE_BEFORE_REMOVING);
         $container->addCompilerPass(new RoutingResolverPass());
+        $container->addCompilerPass(new DeprecatedRoutingLoaderPass());
         $this->addCompilerPassIfExists($container, RoutingControllerPass::class);
         $container->addCompilerPass(new ProfilerPass());
         $this->addCompilerPassIfExists($container, ControllerAttributesListenerPass::class, PassConfig::TYPE_BEFORE_REMOVING);
