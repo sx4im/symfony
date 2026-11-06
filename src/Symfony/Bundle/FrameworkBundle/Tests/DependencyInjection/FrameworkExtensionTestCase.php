@@ -19,10 +19,13 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\TestWith;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LogLevel;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AttributeRouteControllerLoaderPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\DefaultMessageBusPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ReportMissingDependenciesPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
+use Symfony\Bundle\FrameworkBundle\Routing\RedirectableCompiledUrlMatcher;
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
 use Symfony\Bundle\FullStack;
 use Symfony\Component\Asset\AssetBundle;
@@ -558,6 +561,26 @@ abstract class FrameworkExtensionTestCase extends TestCase
         $container->compile();
 
         $this->assertSame($container->getParameter('kernel.project_dir').'/config/routing.xml', $container->getParameter('router.resource'));
+    }
+
+    public function testRoutingLoaderAttributeUsesDeprecatedFrameworkBundleClass()
+    {
+        $container = $this->createContainer(['kernel.charset' => 'UTF-8', 'kernel.secret' => 'secret', 'kernel.runtime_environment' => 'test']);
+        $container->registerExtension(new FrameworkExtension());
+        $container->registerExtension(new RouterBundle()->getContainerExtension());
+        $this->loadFromFile($container, 'legacy_router');
+        $container->getCompilerPassConfig()->setBeforeOptimizationPasses([]);
+        $container->getCompilerPassConfig()->setOptimizationPasses([]);
+        $container->getCompilerPassConfig()->setBeforeRemovingPasses([]);
+        $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $container->getCompilerPassConfig()->setAfterRemovingPasses([]);
+        $container->addCompilerPass(new AttributeRouteControllerLoaderPass());
+        $container->compile();
+
+        $this->assertSame(AttributeRouteControllerLoader::class, $container->getDefinition('routing.loader.attribute')->getClass());
+
+        $options = $container->getDefinition('router.default')->getArgument(2);
+        $this->assertSame(RedirectableCompiledUrlMatcher::class, $options['matcher_class']);
     }
 
     public function testRegisterSerializerExtractor()
